@@ -1,0 +1,9 @@
+<view class="page">
+  <view class="card">
+    <view class="title">提醒状态</view>
+    <switch checked="{{status === 'active'}}" bindchange="onStatusChange" />
+    <text class="hint">{{status === 'active' ? '当前已开启提醒' : '当前已暂停提醒'}}</text>
+  </view>
+
+  <button class="danger-btn" bindtap="onResetCycle">重置周期开始日为今天</button>
+</view>

@@ -1,0 +1,27 @@
+<view class="page">
+  <view class="card status-card">
+    <text class="label">今天状态</text>
+    <text class="status {{isPillDay ? 'pill' : 'break'}}">{{phaseText}}</text>
+    <text class="desc">{{isPillDay ? '请按时服用优思明' : '今日无需服药'}}</text>
+  </view>
+
+  <view class="card">
+    <view class="row">
+      <text class="field-label">周期开始日</text>
+      <picker mode="date" value="{{cycleStartDate}}" bindchange="onCycleDateChange">
+        <text class="picker-value">{{cycleStartDate || '请选择日期'}}</text>
+      </picker>
+    </view>
+
+    <view class="row">
+      <text class="field-label">每日提醒时间</text>
+      <picker mode="time" value="{{remindTime}}" bindchange="onRemindTimeChange">
+        <text class="picker-value">{{remindTime}}</text>
+      </picker>
+    </view>
+  </view>
+
+  <button class="main-btn" bindtap="requestSubscribe">开启订阅提醒</button>
+  <button class="text-btn" bindtap="goSettings">更多设置</button>
+  <text class="hint">{{subscriptionAccepted ? '订阅消息已开启' : '未开启订阅，仍会在小程序内做提示兜底'}}</text>
+</view>
