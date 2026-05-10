@@ -76,6 +76,14 @@ Page({
   },
 
   async requestSubscribe() {
+    if (this.data.subscriptionAccepted) {
+      wx.showToast({
+        title: '订阅已开启',
+        icon: 'none'
+      });
+      return;
+    }
+
     const app = getApp();
     try {
       const templateId = app.globalData.subscribeTemplateId;

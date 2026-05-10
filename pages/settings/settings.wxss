@@ -24,6 +24,10 @@
   color: #666;
 }
 
+.warn {
+  color: #d97706;
+}
+
 .danger-btn {
   margin-top: 24rpx;
   background: #111;

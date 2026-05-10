@@ -3,20 +3,29 @@ const { toYmd } = require('../../utils/cycle');
 
 Page({
   data: {
-    status: 'active'
+    status: 'active',
+    subscriptionAccepted: false
   },
   async onShow() {
     const config = await loadUserConfig();
     this.setData({
-      status: config.status || 'active'
+      status: config.status || 'active',
+      subscriptionAccepted: !!config.subscriptionAccepted
     });
   },
   async onStatusChange(e) {
     const status = e.detail.value ? 'active' : 'paused';
-    this.setData({ status });
-    await saveUserConfig({ status });
+    const subscriptionAccepted = status === 'active' ? this.data.subscriptionAccepted : false;
+    this.setData({
+      status,
+      subscriptionAccepted
+    });
+    await saveUserConfig({
+      status,
+      subscriptionAccepted
+    });
     wx.showToast({
-      title: status === 'active' ? '提醒已开启' : '提醒已暂停',
+      title: status === 'active' ? '提醒已开启' : '提醒与订阅已关闭',
       icon: 'none'
     });
   },

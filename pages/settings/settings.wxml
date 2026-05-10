@@ -2,7 +2,10 @@
   <view class="card">
     <view class="title">提醒状态</view>
     <switch checked="{{status === 'active'}}" bindchange="onStatusChange" />
-    <text class="hint">{{status === 'active' ? '当前已开启提醒' : '当前已暂停提醒'}}</text>
+    <text class="hint">小程序内提醒：{{status === 'active' ? '已开启' : '已暂停'}}</text>
+    <text class="hint {{subscriptionAccepted ? '' : 'warn'}}">
+      订阅消息提醒：{{subscriptionAccepted ? '已开启' : '未开启（请回首页点击“开启订阅提醒”）'}}
+    </text>
   </view>
 
   <button class="danger-btn" bindtap="onResetCycle">重置周期开始日为今天</button>

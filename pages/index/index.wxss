@@ -71,6 +71,11 @@ page {
   color: #fff;
 }
 
+.main-btn-disabled {
+  background: #b9bcc4;
+  color: #fff;
+}
+
 .text-btn {
   margin-top: 12rpx;
   border: none;
