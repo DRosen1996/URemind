@@ -9,7 +9,24 @@ const BATCH_SIZE = 100;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const CYCLE_LENGTH = 28;
 const PILL_DAYS = 21;
-const DEFAULT_TEMPLATE_ID = 'replace-with-your-subscribe-template-id';
+// 与小程序 app.globalData.subscribeTemplateId 保持一致（打卡提醒：thing4 + time13）
+const DEFAULT_TEMPLATE_ID = 'quh9oId5A5RAI7IvAeXndh5EIw-eYGRIRnpFt2upc84';
+const THING_MAX_LEN = 20;
+
+function truncateThing(text) {
+  const s = String(text || '').trim();
+  return s.length > THING_MAX_LEN ? s.slice(0, THING_MAX_LEN) : s;
+}
+
+function buildThing4(cycle) {
+  if (!cycle.hasStarted) {
+    return '';
+  }
+  if (cycle.isPillDay) {
+    return truncateThing(`优思明第${cycle.dayIndex}天请服药`);
+  }
+  return truncateThing(`优思明停药第${cycle.breakDayIndex}天`);
+}
 
 function toDateOnly(dateInput) {
   const date = new Date(dateInput);
@@ -83,9 +100,8 @@ async function handleUser(user, now, todayYmd, templateId) {
   if (!cycle.hasStarted) {
     return { skipped: true, reason: 'before_cycle_start' };
   }
-  const thing = cycle.isPillDay
-    ? `今天第${cycle.dayIndex}天，请按时服用优思明`
-    : `今天停药第${cycle.breakDayIndex}天，无需服药`;
+  const thing4Value = buildThing4(cycle);
+  const time13Value = (user.remindTime || '21:00').trim();
 
   try {
     await cloud.openapi.subscribeMessage.send({
@@ -93,9 +109,8 @@ async function handleUser(user, now, todayYmd, templateId) {
       templateId,
       page: 'pages/index/index',
       data: {
-        thing1: { value: thing.slice(0, 20) },
-        date2: { value: `${todayYmd} ${user.remindTime}` },
-        thing3: { value: cycle.isPillDay ? '吃药期' : '停药期' }
+        thing4: { value: thing4Value },
+        time13: { value: time13Value }
       },
       miniprogramState: 'formal'
     });

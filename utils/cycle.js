@@ -29,7 +29,7 @@ function calcCycleStatus(cycleStartDate, currentDate = new Date()) {
       dayIndex: 0,
       isPillDay: true,
       breakDayIndex: 0,
-      phaseText: `距离下次吃药还有${daysUntilStart}天`
+      phaseText: `距离下次吃小优还有${daysUntilStart}天`
     };
   }
 
@@ -37,7 +37,7 @@ function calcCycleStatus(cycleStartDate, currentDate = new Date()) {
   const isPillDay = dayIndex <= PILL_DAYS;
   const breakDayIndex = isPillDay ? 0 : dayIndex - PILL_DAYS;
   const phaseText = isPillDay
-    ? `第${dayIndex}天（吃药）`
+    ? `第${dayIndex}天（小优）`
     : `第${dayIndex}天（停药第${breakDayIndex}天）`;
 
   return {

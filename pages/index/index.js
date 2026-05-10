@@ -35,7 +35,7 @@ Page({
       phaseText: cycle.phaseText,
       statusDesc: cycle.hasStarted
         ? (cycle.isPillDay ? '请按时服用优思明' : '今日无需服药')
-        : '周期尚未开始，今天不用吃药',
+        : '周期尚未开始，今天不用小优',
       status: config.status || 'active',
       lastInAppReminderDate: config.lastInAppReminderDate || ''
     });
@@ -52,7 +52,7 @@ Page({
       phaseText: cycle.phaseText,
       statusDesc: cycle.hasStarted
         ? (cycle.isPillDay ? '请按时服用优思明' : '今日无需服药')
-        : '周期尚未开始，今天不用吃药'
+        : '周期尚未开始，今天不用小优'
     });
     await saveUserConfig({
       cycleStartDate,

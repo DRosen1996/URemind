@@ -2,7 +2,16 @@
   "compileType": "miniprogram",
   "libVersion": "trial",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": ".git"
+      },
+      {
+        "type": "folder",
+        "value": ".git/cursor"
+      }
+    ],
     "include": []
   },
   "setting": {
@@ -38,5 +47,6 @@
   },
   "cloudfunctionRoot": "cloudfunctions/",
   "appid": "wx044f031f196726bd",
-  "simulatorPluginLibVersion": {}
+  "simulatorPluginLibVersion": {},
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
 }

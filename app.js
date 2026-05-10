@@ -7,12 +7,12 @@ App({
     }
 
     wx.cloud.init({
-      env: 'replace-with-your-cloud-env-id',
+      env: 'cloud1-d5gz8xnc51e291b79',
       traceUser: true
     });
   },
   globalData: {
     timezone: 'Asia/Shanghai',
-    subscribeTemplateId: 'replace-with-your-subscribe-template-id'
+    subscribeTemplateId: 'quh9oId5A5RAI7IvAeXndh5EIw-eYGRIRnpFt2upc84'
   }
 });
