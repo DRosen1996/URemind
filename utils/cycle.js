@@ -29,7 +29,7 @@ function calcCycleStatus(cycleStartDate, currentDate = new Date()) {
       dayIndex: 0,
       isPillDay: true,
       breakDayIndex: 0,
-      phaseText: `距离开始还有${daysUntilStart}天`
+      phaseText: `距离下次吃药还有${daysUntilStart}天`
     };
   }
 

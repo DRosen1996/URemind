@@ -39,6 +39,10 @@ page {
   color: #3f7cff;
 }
 
+.status.pending {
+  color: #888;
+}
+
 .desc {
   font-size: 24rpx;
   color: #666;

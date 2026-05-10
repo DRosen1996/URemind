@@ -1,8 +1,8 @@
 <view class="page">
   <view class="card status-card">
     <text class="label">今天状态</text>
-    <text class="status {{isPillDay ? 'pill' : 'break'}}">{{phaseText}}</text>
-    <text class="desc">{{isPillDay ? '请按时服用优思明' : '今日无需服药'}}</text>
+    <text class="status {{hasStarted ? (isPillDay ? 'pill' : 'break') : 'pending'}}">{{phaseText}}</text>
+    <text class="desc">{{statusDesc}}</text>
   </view>
 
   <view class="card">

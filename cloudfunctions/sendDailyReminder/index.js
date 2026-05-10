@@ -28,10 +28,26 @@ function calcCycleStatus(cycleStartDate, currentDate = new Date()) {
   const start = toDateOnly(cycleStartDate);
   const current = toDateOnly(currentDate);
   const diffDays = Math.floor((current.getTime() - start.getTime()) / ONE_DAY_MS);
+  const hasStarted = diffDays >= 0;
+  if (!hasStarted) {
+    return {
+      hasStarted: false,
+      daysUntilStart: Math.abs(diffDays),
+      dayIndex: 0,
+      isPillDay: false,
+      breakDayIndex: 0
+    };
+  }
   const dayIndex = ((diffDays % CYCLE_LENGTH) + CYCLE_LENGTH) % CYCLE_LENGTH + 1;
   const isPillDay = dayIndex <= PILL_DAYS;
   const breakDayIndex = isPillDay ? 0 : dayIndex - PILL_DAYS;
-  return { dayIndex, isPillDay, breakDayIndex };
+  return {
+    hasStarted: true,
+    daysUntilStart: 0,
+    dayIndex,
+    isPillDay,
+    breakDayIndex
+  };
 }
 
 function minutesFromTime(remindTime = '21:00') {
@@ -64,6 +80,9 @@ async function handleUser(user, now, todayYmd, templateId) {
   }
 
   const cycle = calcCycleStatus(user.cycleStartDate, now);
+  if (!cycle.hasStarted) {
+    return { skipped: true, reason: 'before_cycle_start' };
+  }
   const thing = cycle.isPillDay
     ? `今天第${cycle.dayIndex}天，请按时服用优思明`
     : `今天停药第${cycle.breakDayIndex}天，无需服药`;
