@@ -5,19 +5,17 @@ Page({
   data: {
     cycleStartDate: '',
     remindTime: '21:00',
+    reminderEnabled: false,
     subscriptionAccepted: false,
     hasStarted: false,
     daysUntilStart: 0,
     isPillDay: true,
     phaseText: '请先设置周期开始日',
-    statusDesc: '',
-    status: 'active',
-    lastInAppReminderDate: ''
+    statusDesc: ''
   },
 
   async onShow() {
     await this.refreshConfig();
-    this.tryInAppFallbackReminder();
   },
 
   async refreshConfig() {
@@ -28,6 +26,7 @@ Page({
     this.setData({
       cycleStartDate,
       remindTime: config.remindTime || '21:00',
+      reminderEnabled: !!config.reminderEnabled,
       subscriptionAccepted: !!config.subscriptionAccepted,
       hasStarted: cycle.hasStarted,
       daysUntilStart: cycle.daysUntilStart,
@@ -35,9 +34,7 @@ Page({
       phaseText: cycle.phaseText,
       statusDesc: cycle.hasStarted
         ? (cycle.isPillDay ? '请按时服用优思明' : '今日无需服药')
-        : '周期尚未开始，今天不用小优',
-      status: config.status || 'active',
-      lastInAppReminderDate: config.lastInAppReminderDate || ''
+        : '周期尚未开始，今天无需服药'
     });
   },
 
@@ -52,14 +49,13 @@ Page({
       phaseText: cycle.phaseText,
       statusDesc: cycle.hasStarted
         ? (cycle.isPillDay ? '请按时服用优思明' : '今日无需服药')
-        : '周期尚未开始，今天不用小优'
+        : '周期尚未开始，今天无需服药'
     });
     await saveUserConfig({
       cycleStartDate,
       remindTime: this.data.remindTime,
-      subscriptionAccepted: this.data.subscriptionAccepted,
-      status: this.data.status,
-      lastInAppReminderDate: this.data.lastInAppReminderDate
+      reminderEnabled: this.data.reminderEnabled,
+      subscriptionAccepted: this.data.subscriptionAccepted
     });
   },
 
@@ -69,16 +65,15 @@ Page({
     await saveUserConfig({
       cycleStartDate: this.data.cycleStartDate,
       remindTime,
-      subscriptionAccepted: this.data.subscriptionAccepted,
-      status: this.data.status,
-      lastInAppReminderDate: this.data.lastInAppReminderDate
+      reminderEnabled: this.data.reminderEnabled,
+      subscriptionAccepted: this.data.subscriptionAccepted
     });
   },
 
   async requestSubscribe() {
-    if (this.data.subscriptionAccepted) {
+    if (this.data.reminderEnabled) {
       wx.showToast({
-        title: '订阅已开启',
+        title: '提醒已开启',
         icon: 'none'
       });
       return;
@@ -92,63 +87,34 @@ Page({
       });
       const accepted = result[templateId] === 'accept';
       this.setData({
+        reminderEnabled: accepted,
         subscriptionAccepted: accepted
       });
       await saveUserConfig({
         cycleStartDate: this.data.cycleStartDate,
         remindTime: this.data.remindTime,
-        subscriptionAccepted: accepted,
-        status: this.data.status,
-        lastInAppReminderDate: this.data.lastInAppReminderDate
+        reminderEnabled: accepted,
+        subscriptionAccepted: accepted
       });
       wx.showToast({
-        title: accepted ? '订阅成功' : '订阅未开启',
+        title: accepted ? '提醒已开启' : '提醒未开启',
         icon: 'none'
       });
     } catch (error) {
+      await saveUserConfig({
+        reminderEnabled: false,
+        subscriptionAccepted: false
+      });
+      this.setData({
+        reminderEnabled: false,
+        subscriptionAccepted: false
+      });
       wx.showToast({
-        title: '订阅请求失败',
+        title: '提醒开启失败',
         icon: 'none'
       });
       console.error('订阅消息授权失败', error);
     }
-  },
-
-  async tryInAppFallbackReminder() {
-    const today = toYmd(new Date());
-    const [hour, minute] = this.data.remindTime.split(':').map(Number);
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const remindMinutes = hour * 60 + minute;
-    if (this.data.status !== 'active') {
-      return;
-    }
-    if (!this.data.hasStarted) {
-      return;
-    }
-    if (nowMinutes < remindMinutes) {
-      return;
-    }
-    if (this.data.lastInAppReminderDate === today) {
-      return;
-    }
-
-    wx.showModal({
-      title: '今日提醒',
-      content: this.data.isPillDay ? '到时间了，记得服用优思明。' : '今天是停药日，无需服药。',
-      showCancel: false
-    });
-
-    this.setData({
-      lastInAppReminderDate: today
-    });
-    await saveUserConfig({
-      cycleStartDate: this.data.cycleStartDate,
-      remindTime: this.data.remindTime,
-      subscriptionAccepted: this.data.subscriptionAccepted,
-      status: this.data.status,
-      lastInAppReminderDate: today
-    });
   },
 
   goSettings() {

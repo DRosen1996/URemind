@@ -3,35 +3,50 @@ const { toYmd } = require('../../utils/cycle');
 
 Page({
   data: {
-    status: 'active',
+    reminderEnabled: false,
     subscriptionAccepted: false
   },
   async onShow() {
     const config = await loadUserConfig();
     this.setData({
-      status: config.status || 'active',
+      reminderEnabled: !!config.reminderEnabled,
       subscriptionAccepted: !!config.subscriptionAccepted
     });
   },
   async onStatusChange(e) {
-    const status = e.detail.value ? 'active' : 'paused';
-    const subscriptionAccepted = status === 'active' ? this.data.subscriptionAccepted : false;
+    const nextEnabled = e.detail.value;
+    if (nextEnabled) {
+      this.setData({
+        reminderEnabled: false
+      });
+      wx.showToast({
+        title: '请回首页开启订阅提醒',
+        icon: 'none'
+      });
+      return;
+    }
+
     this.setData({
-      status,
-      subscriptionAccepted
+      reminderEnabled: false,
+      subscriptionAccepted: false
     });
     await saveUserConfig({
-      status,
-      subscriptionAccepted
+      reminderEnabled: false,
+      subscriptionAccepted: false,
+      status: 'paused'
     });
     wx.showToast({
-      title: status === 'active' ? '提醒已开启' : '提醒与订阅已关闭',
+      title: '提醒已关闭',
       icon: 'none'
     });
   },
   async onResetCycle() {
     const cycleStartDate = toYmd(new Date());
-    await saveUserConfig({ cycleStartDate, status: this.data.status });
+    await saveUserConfig({
+      cycleStartDate,
+      reminderEnabled: this.data.reminderEnabled,
+      subscriptionAccepted: this.data.subscriptionAccepted
+    });
     wx.showToast({
       title: '已重置为今天',
       icon: 'none'

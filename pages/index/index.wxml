@@ -22,12 +22,12 @@
   </view>
 
   <button
-    class="main-btn {{subscriptionAccepted ? 'main-btn-disabled' : ''}}"
+    class="main-btn {{reminderEnabled ? 'main-btn-disabled' : ''}}"
     bindtap="requestSubscribe"
-    disabled="{{subscriptionAccepted}}"
+    disabled="{{reminderEnabled}}"
   >
-    {{subscriptionAccepted ? '订阅已开启' : '开启订阅提醒'}}
+    {{reminderEnabled ? '提醒已开启' : '开启订阅提醒'}}
   </button>
   <button class="text-btn" bindtap="goSettings">更多设置</button>
-  <text class="hint">{{subscriptionAccepted ? '' : '未开启订阅，仍会在小程序内做提示'}}</text>
+  <text class="hint">{{reminderEnabled ? '提醒已开启（订阅消息）' : '提醒未开启，请先完成订阅授权'}}</text>
 </view>

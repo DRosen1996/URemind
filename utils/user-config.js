@@ -17,13 +17,21 @@ async function loadUserConfig() {
       cycleStartDate: '',
       remindTime: '21:00',
       timezone: 'Asia/Shanghai',
+      reminderEnabled: false,
       subscriptionAccepted: false,
-      lastInAppReminderDate: '',
       status: 'active'
     };
   }
 
-  return result.data[0];
+  const config = result.data[0];
+  const reminderEnabled = typeof config.reminderEnabled === 'boolean'
+    ? config.reminderEnabled
+    : (config.status === 'active' && !!config.subscriptionAccepted);
+
+  return {
+    ...config,
+    reminderEnabled
+  };
 }
 
 function saveUserConfig(data) {

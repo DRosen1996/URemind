@@ -1,10 +1,10 @@
 <view class="page">
   <view class="card">
-    <view class="title">提醒状态</view>
-    <switch checked="{{status === 'active'}}" bindchange="onStatusChange" />
-    <text class="hint">小程序内提醒：{{status === 'active' ? '已开启' : '已暂停'}}</text>
+    <view class="title">提醒开关（订阅消息）</view>
+    <switch checked="{{reminderEnabled}}" bindchange="onStatusChange" />
+    <text class="hint">提醒状态：{{reminderEnabled ? '已开启' : '已关闭'}}</text>
     <text class="hint {{subscriptionAccepted ? '' : 'warn'}}">
-      订阅消息提醒：{{subscriptionAccepted ? '已开启' : '未开启（请回首页点击“开启订阅提醒”）'}}
+      订阅授权：{{subscriptionAccepted ? '已授权' : '未授权（请回首页点击“开启订阅提醒”）'}}
     </text>
   </view>
 

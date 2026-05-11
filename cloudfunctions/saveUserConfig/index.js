@@ -13,23 +13,32 @@ exports.main = async (event) => {
 
   const existing = await db.collection('users').where({ openid }).limit(1).get();
   const current = existing.data[0] || {};
+  const currentReminderEnabled = typeof current.reminderEnabled === 'boolean'
+    ? current.reminderEnabled
+    : (current.status === 'active' && !!current.subscriptionAccepted);
+
+  const nextSubscriptionAccepted = typeof event.subscriptionAccepted === 'boolean'
+    ? event.subscriptionAccepted
+    : !!current.subscriptionAccepted;
+
+  const nextReminderEnabled = typeof event.reminderEnabled === 'boolean'
+    ? event.reminderEnabled
+    : currentReminderEnabled;
 
   const payload = {
     cycleStartDate: typeof event.cycleStartDate === 'string' ? event.cycleStartDate : (current.cycleStartDate || ''),
     remindTime: typeof event.remindTime === 'string' ? event.remindTime : (current.remindTime || '21:00'),
     timezone: typeof event.timezone === 'string' ? event.timezone : (current.timezone || 'Asia/Shanghai'),
-    subscriptionAccepted: typeof event.subscriptionAccepted === 'boolean'
-      ? event.subscriptionAccepted
-      : !!current.subscriptionAccepted,
-    status: typeof event.status === 'string' ? event.status : (current.status || 'active'),
+    subscriptionAccepted: nextSubscriptionAccepted,
+    reminderEnabled: nextReminderEnabled,
+    status: typeof event.status === 'string' ? event.status : (nextReminderEnabled ? 'active' : 'paused'),
     updatedAt: now
   };
 
-  if (typeof event.lastInAppReminderDate === 'string') {
-    payload.lastInAppReminderDate = event.lastInAppReminderDate;
-  } else if (typeof current.lastInAppReminderDate === 'string') {
-    payload.lastInAppReminderDate = current.lastInAppReminderDate;
+  if (!payload.reminderEnabled) {
+    payload.subscriptionAccepted = false;
   }
+
   if (typeof event.lastNotifiedDate === 'string') {
     payload.lastNotifiedDate = event.lastNotifiedDate;
   } else if (typeof current.lastNotifiedDate === 'string') {

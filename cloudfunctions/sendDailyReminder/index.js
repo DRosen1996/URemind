@@ -86,7 +86,11 @@ async function writeNotifyLog(data) {
 }
 
 async function handleUser(user, now, todayYmd, templateId) {
-  if (!user.subscriptionAccepted || user.status !== 'active' || !user.cycleStartDate) {
+  const reminderEnabled = typeof user.reminderEnabled === 'boolean'
+    ? user.reminderEnabled
+    : (user.status === 'active' && !!user.subscriptionAccepted);
+
+  if (!reminderEnabled || !user.subscriptionAccepted || !user.cycleStartDate) {
     return { skipped: true, reason: 'not_ready' };
   }
   if (!shouldSendToday(user.remindTime, now)) {
@@ -134,6 +138,17 @@ async function handleUser(user, now, todayYmd, templateId) {
 
     return { success: true };
   } catch (error) {
+    const errText = `${error.errCode || ''} ${error.message || ''}`;
+    const shouldDisableReminder = /43101|template|subscribe|用户|accept/i.test(errText);
+    if (shouldDisableReminder) {
+      await db.collection('users').doc(user._id).update({
+        data: {
+          reminderEnabled: false,
+          subscriptionAccepted: false,
+          updatedAt: now
+        }
+      });
+    }
     await writeNotifyLog({
       openid: user.openid,
       day: todayYmd,
@@ -158,7 +173,6 @@ exports.main = async (event) => {
 
   while (true) {
     const result = await db.collection('users')
-      .where({ status: 'active' })
       .skip(offset)
       .limit(BATCH_SIZE)
       .get();
