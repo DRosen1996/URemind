@@ -1,36 +1,106 @@
-.page {
+page {
   min-height: 100vh;
-  background: #f5f6f8;
-  padding: 24rpx;
+  background: #F3F4F6;
+}
+
+.page {
+  padding: 32rpx 24rpx 60rpx;
   box-sizing: border-box;
 }
 
+/* ─── 卡片 ─── */
 .card {
   background: #fff;
-  border-radius: 16rpx;
-  padding: 28rpx;
+  border-radius: 20rpx;
+  padding: 0 28rpx;
+  margin-bottom: 16rpx;
+  overflow: hidden;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 0;
+  min-height: 88rpx;
+}
+
+.setting-row-left {
   display: flex;
   flex-direction: column;
+  gap: 6rpx;
+}
+
+.setting-label {
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 500;
+}
+
+.setting-sublabel {
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.divider {
+  height: 1rpx;
+  background: #F3F4F6;
+}
+
+/* ─── 状态徽章 ─── */
+.badge {
+  border-radius: 8rpx;
+  padding: 6rpx 18rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.badge-green {
+  background: #D1FAE5;
+  color: #059669;
+}
+
+.badge-gray {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.badge-orange {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+/* ─── 警告提示 ─── */
+.warn-hint {
+  display: block;
+  font-size: 22rpx;
+  color: #D97706;
+  padding: 0 4rpx;
+  margin-bottom: 16rpx;
+  line-height: 1.6;
+}
+
+/* ─── 危险操作区 ─── */
+.danger-section {
+  margin-top: 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 16rpx;
 }
 
-.title {
-  font-size: 32rpx;
-  font-weight: 600;
-}
-
-.hint {
-  font-size: 24rpx;
-  color: #666;
-}
-
-.warn {
-  color: #d97706;
-}
-
 .danger-btn {
-  margin-top: 24rpx;
-  background: #111;
-  color: #fff;
-  border-radius: 12rpx;
+  border-radius: 16rpx !important;
+  background: #fff !important;
+  color: #EF4444 !important;
+  box-shadow: inset 0 0 0 1rpx #FCA5A5 !important;
+  border: none !important;
+  font-size: 28rpx !important;
+  font-weight: 500;
+}
+
+.danger-hint {
+  font-size: 22rpx;
+  color: #9CA3AF;
+  text-align: center;
 }

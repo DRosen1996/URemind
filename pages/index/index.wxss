@@ -1,93 +1,179 @@
 page {
   min-height: 100vh;
-  background: #f5f6f8;
+  background: #F3F4F6;
 }
 
 .page {
-  padding: 24rpx;
+  padding: 32rpx 24rpx 60rpx;
   box-sizing: border-box;
 }
 
-.card {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 28rpx;
-  margin-bottom: 20rpx;
-}
-
+/* ─── 状态卡片 ─── */
 .status-card {
+  border-radius: 24rpx;
+  padding: 36rpx;
+  margin-bottom: 20rpx;
   display: flex;
   flex-direction: column;
+}
+
+.card-pill {
+  background: linear-gradient(135deg, #F5F0FF 0%, #EDE9FE 100%);
+}
+
+.card-break {
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+}
+
+.card-pending {
+  background: #fff;
+}
+
+.status-eyebrow {
+  font-size: 22rpx;
+  color: #9CA3AF;
+  letter-spacing: 2rpx;
+  margin-bottom: 12rpx;
+}
+
+.status-text {
+  font-size: 52rpx;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 1rpx;
+}
+
+.card-pill .status-text { color: #7C3AED; }
+.card-break .status-text { color: #059669; }
+.card-pending .status-text { color: #6B7280; }
+
+.status-desc {
+  font-size: 26rpx;
+  margin-top: 8rpx;
+  margin-bottom: 28rpx;
+}
+
+.card-pill .status-desc { color: #8B5CF6; }
+.card-break .status-desc { color: #10B981; }
+.card-pending .status-desc { color: #9CA3AF; }
+
+/* ─── 进度点阵 ─── */
+.dots-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.dots-row {
+  display: flex;
+  flex-direction: row;
   gap: 8rpx;
 }
 
-.label {
-  color: #888;
-  font-size: 24rpx;
+.dot {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.status {
-  font-size: 42rpx;
-  font-weight: 700;
+.dot-done-pill    { background: #A78BFA; }
+.dot-done-break   { background: #34D399; }
+.dot-today-pill   { background: #7C3AED; transform: scale(1.25); box-shadow: 0 0 0 5rpx rgba(124,58,237,0.22); }
+.dot-today-break  { background: #059669; transform: scale(1.25); box-shadow: 0 0 0 5rpx rgba(5,150,105,0.22); }
+.dot-future-pill  { background: #DDD6FE; }
+.dot-future-break { background: #A7F3D0; }
+.dot-inactive     { background: #E5E7EB; }
+
+.progress-label {
+  font-size: 22rpx;
+  color: #9CA3AF;
+  margin-top: 20rpx;
 }
 
-.status.pill {
-  color: #111;
+/* ─── 配置卡片 ─── */
+.card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 0 28rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
 }
 
-.status.break {
-  color: #3f7cff;
-}
-
-.status.pending {
-  color: #888;
-}
-
-.desc {
-  font-size: 24rpx;
-  color: #666;
-}
-
-.row {
+.config-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10rpx 0;
+  padding: 32rpx 0;
 }
 
-.field-label {
-  color: #333;
-}
-
-.picker-value {
-  color: #111;
+.config-label {
+  font-size: 28rpx;
+  color: #374151;
   font-weight: 500;
 }
 
+.config-value-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.config-value {
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 600;
+}
+
+.arrow {
+  font-size: 40rpx;
+  color: #D1D5DB;
+  line-height: 1;
+  margin-top: -4rpx;
+}
+
+.divider {
+  height: 1rpx;
+  background: #F3F4F6;
+}
+
+/* ─── 主按钮 ─── */
 .main-btn {
   margin-top: 8rpx;
-  border-radius: 12rpx;
-  background: #111;
+  border-radius: 16rpx;
+  background: #111827;
   color: #fff;
-}
-
-.main-btn-disabled {
-  background: #b9bcc4;
-  color: #fff;
-}
-
-.text-btn {
-  margin-top: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 26rpx 32rpx;
+  line-height: 1.4;
   border: none;
-  background: transparent;
-  color: #666;
-  font-size: 26rpx;
 }
 
-.hint {
-  display: block;
-  margin-top: 8rpx;
-  color: #888;
-  font-size: 24rpx;
-  text-align: center;
+.main-btn-success {
+  background: #10B981 !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+/* ─── 更多设置入口 ─── */
+.settings-entry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  margin-top: 28rpx;
+  padding: 16rpx;
+}
+
+.settings-entry-text {
+  font-size: 26rpx;
+  color: #6B7280;
+}
+
+.settings-entry-arrow {
+  font-size: 36rpx;
+  color: #D1D5DB;
+  line-height: 1;
+  margin-top: -2rpx;
 }

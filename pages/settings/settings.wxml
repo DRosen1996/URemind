@@ -1,12 +1,42 @@
 <view class="page">
+
+  <!-- 提醒开关卡片 -->
   <view class="card">
-    <view class="title">提醒开关（订阅消息）</view>
-    <switch checked="{{reminderEnabled}}" bindchange="onStatusChange" />
-    <text class="hint">提醒状态：{{reminderEnabled ? '已开启' : '已关闭'}}</text>
-    <text class="hint {{subscriptionAccepted ? '' : 'warn'}}">
-      订阅授权：{{subscriptionAccepted ? '已授权' : '未授权（请回首页点击“开启订阅提醒”）'}}
-    </text>
+    <view class="setting-row">
+      <view class="setting-row-left">
+        <text class="setting-label">每日提醒</text>
+        <text class="setting-sublabel">通过微信订阅消息推送</text>
+      </view>
+      <switch checked="{{reminderEnabled}}" bindchange="onStatusChange" color="#10B981" />
+    </view>
+
+    <view class="divider"></view>
+
+    <view class="setting-row">
+      <text class="setting-label">提醒状态</text>
+      <view class="badge {{reminderEnabled ? 'badge-green' : 'badge-gray'}}">
+        <text>{{reminderEnabled ? '已开启' : '已关闭'}}</text>
+      </view>
+    </view>
+
+    <view class="divider"></view>
+
+    <view class="setting-row">
+      <text class="setting-label">订阅授权</text>
+      <view class="badge {{subscriptionAccepted ? 'badge-green' : 'badge-orange'}}">
+        <text>{{subscriptionAccepted ? '已授权' : '未授权'}}</text>
+      </view>
+    </view>
   </view>
 
-  <button class="danger-btn" bindtap="onResetCycle">重置周期开始日为今天</button>
+  <text class="warn-hint" wx:if="{{!subscriptionAccepted}}">
+    未授权时请回首页点击「开启每日提醒」
+  </text>
+
+  <!-- 危险操作区 -->
+  <view class="danger-section">
+    <button class="danger-btn" bindtap="onResetCycle">重置周期开始日为今天</button>
+    <text class="danger-hint">此操作将把周期重新从今天开始计算</text>
+  </view>
+
 </view>

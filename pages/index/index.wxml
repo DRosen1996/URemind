@@ -1,33 +1,61 @@
 <view class="page">
-  <view class="card status-card">
-    <text class="label">今天状态</text>
-    <text class="status {{hasStarted ? (isPillDay ? 'pill' : 'break') : 'pending'}}">{{phaseText}}</text>
-    <text class="desc">{{statusDesc}}</text>
+
+  <!-- 状态卡片 -->
+  <view class="status-card {{hasStarted ? (isPillDay ? 'card-pill' : 'card-break') : 'card-pending'}}">
+    <text class="status-eyebrow">今天状态</text>
+    <text class="status-text">{{phaseText}}</text>
+    <text class="status-desc">{{statusDesc}}</text>
+
+    <!-- 28天进度点阵 -->
+    <view class="dots-grid">
+      <view class="dots-row">
+        <view wx:for="{{cycleDots1}}" wx:key="i" class="dot dot-{{item.status}}"></view>
+      </view>
+      <view class="dots-row">
+        <view wx:for="{{cycleDots2}}" wx:key="i" class="dot dot-{{item.status}}"></view>
+      </view>
+    </view>
+
+    <text class="progress-label" wx:if="{{hasStarted}}">第 {{dayIndex}} / 28 天</text>
+    <text class="progress-label" wx:else>周期未开始</text>
   </view>
 
+  <!-- 配置卡片 -->
   <view class="card">
-    <view class="row">
-      <text class="field-label">周期开始日</text>
-      <picker mode="date" value="{{cycleStartDate}}" bindchange="onCycleDateChange">
-        <text class="picker-value">{{cycleStartDate || '请选择日期'}}</text>
-      </picker>
-    </view>
+    <picker mode="date" value="{{cycleStartDate}}" bindchange="onCycleDateChange">
+      <view class="config-row">
+        <text class="config-label">周期开始日</text>
+        <view class="config-value-wrap">
+          <text class="config-value">{{cycleStartDate || '请选择日期'}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+    </picker>
 
-    <view class="row">
-      <text class="field-label">每日提醒时间</text>
-      <picker mode="time" value="{{remindTime}}" bindchange="onRemindTimeChange">
-        <text class="picker-value">{{remindTime}}</text>
-      </picker>
-    </view>
+    <view class="divider"></view>
+
+    <picker mode="time" value="{{remindTime}}" bindchange="onRemindTimeChange">
+      <view class="config-row">
+        <text class="config-label">每日提醒时间</text>
+        <view class="config-value-wrap">
+          <text class="config-value">{{remindTime}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+    </picker>
   </view>
 
+  <!-- 订阅按钮 -->
   <button
-    class="main-btn {{reminderEnabled ? 'main-btn-disabled' : ''}}"
+    class="main-btn {{reminderEnabled ? 'main-btn-success' : ''}}"
     bindtap="requestSubscribe"
     disabled="{{reminderEnabled}}"
-  >
-    {{reminderEnabled ? '提醒已开启' : '开启订阅提醒'}}
-  </button>
-  <button class="text-btn" bindtap="goSettings">更多设置</button>
-  <text class="hint">{{reminderEnabled ? '提醒已开启（订阅消息）' : '提醒未开启，请先完成订阅授权'}}</text>
+  >{{reminderEnabled ? '✓  提醒已开启' : '开启每日提醒'}}</button>
+
+  <!-- 更多设置入口 -->
+  <view class="settings-entry" bindtap="goSettings">
+    <text class="settings-entry-text">更多设置</text>
+    <text class="settings-entry-arrow">›</text>
+  </view>
+
 </view>

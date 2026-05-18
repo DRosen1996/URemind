@@ -1,4 +1,11 @@
 /**app.wxss**/
+page {
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #F3F4F6;
+  color: #111827;
+}
+
 .container {
   height: 100%;
   display: flex;
@@ -7,4 +14,5 @@
   justify-content: space-between;
   padding: 200rpx 0;
   box-sizing: border-box;
-} 
+}
+

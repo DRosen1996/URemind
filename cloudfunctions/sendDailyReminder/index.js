@@ -13,6 +13,15 @@ const PILL_DAYS = 21;
 const DEFAULT_TEMPLATE_ID = 'quh9oId5A5RAI7IvAeXndh5EIw-eYGRIRnpFt2upc84';
 const THING_MAX_LEN = 20;
 
+function getErrorDetails(error) {
+  return {
+    errCode: error && error.errCode,
+    errMsg: error && error.errMsg,
+    message: error && error.message,
+    stack: error && error.stack
+  };
+}
+
 function truncateThing(text) {
   const s = String(text || '').trim();
   return s.length > THING_MAX_LEN ? s.slice(0, THING_MAX_LEN) : s;
@@ -79,9 +88,14 @@ function shouldSendToday(remindTime, currentDate) {
 
 async function writeNotifyLog(data) {
   try {
+    console.log('[sendDailyReminder] write notify log', data);
     await db.collection('notify_logs').add({ data });
   } catch (error) {
-    console.error('写入 notify_logs 失败', error);
+    console.error('[sendDailyReminder] write notify log failed', {
+      data,
+      error,
+      errorDetails: getErrorDetails(error)
+    });
   }
 }
 
@@ -90,25 +104,75 @@ async function handleUser(user, now, todayYmd, templateId) {
     ? user.reminderEnabled
     : (user.status === 'active' && !!user.subscriptionAccepted);
 
+  console.log('[sendDailyReminder] handle user start', {
+    openid: user.openid,
+    templateId,
+    todayYmd,
+    user: {
+      cycleStartDate: user.cycleStartDate,
+      remindTime: user.remindTime,
+      reminderEnabled: user.reminderEnabled,
+      subscriptionAccepted: user.subscriptionAccepted,
+      status: user.status,
+      lastNotifiedDate: user.lastNotifiedDate
+    },
+    derivedReminderEnabled: reminderEnabled
+  });
+
   if (!reminderEnabled || !user.subscriptionAccepted || !user.cycleStartDate) {
+    console.log('[sendDailyReminder] skip:not_ready', {
+      openid: user.openid,
+      reminderEnabled,
+      subscriptionAccepted: user.subscriptionAccepted,
+      cycleStartDate: user.cycleStartDate
+    });
     return { skipped: true, reason: 'not_ready' };
   }
   if (!shouldSendToday(user.remindTime, now)) {
+    console.log('[sendDailyReminder] skip:before_time', {
+      openid: user.openid,
+      now,
+      remindTime: user.remindTime
+    });
     return { skipped: true, reason: 'before_time' };
   }
   if (user.lastNotifiedDate === todayYmd) {
+    console.log('[sendDailyReminder] skip:already_sent', {
+      openid: user.openid,
+      todayYmd,
+      lastNotifiedDate: user.lastNotifiedDate
+    });
     return { skipped: true, reason: 'already_sent' };
   }
 
   const cycle = calcCycleStatus(user.cycleStartDate, now);
+  console.log('[sendDailyReminder] cycle result', {
+    openid: user.openid,
+    cycle
+  });
   if (!cycle.hasStarted) {
+    console.log('[sendDailyReminder] skip:before_cycle_start', {
+      openid: user.openid,
+      cycleStartDate: user.cycleStartDate,
+      cycle
+    });
     return { skipped: true, reason: 'before_cycle_start' };
   }
   const thing4Value = buildThing4(cycle);
   const time13Value = (user.remindTime || '21:00').trim();
 
   try {
-    await cloud.openapi.subscribeMessage.send({
+    console.log('[sendDailyReminder] send payload', {
+      openid: user.openid,
+      templateId,
+      page: 'pages/index/index',
+      data: {
+        thing4: thing4Value,
+        time13: time13Value
+      }
+    });
+
+    const sendRes = await cloud.openapi.subscribeMessage.send({
       touser: user.openid,
       templateId,
       page: 'pages/index/index',
@@ -117,6 +181,11 @@ async function handleUser(user, now, todayYmd, templateId) {
         time13: { value: time13Value }
       },
       miniprogramState: 'formal'
+    });
+
+    console.log('[sendDailyReminder] send success', {
+      openid: user.openid,
+      sendRes
     });
 
     await db.collection('users').doc(user._id).update({
@@ -140,6 +209,15 @@ async function handleUser(user, now, todayYmd, templateId) {
   } catch (error) {
     const errText = `${error.errCode || ''} ${error.message || ''}`;
     const shouldDisableReminder = /43101|template|subscribe|用户|accept/i.test(errText);
+
+    console.error('[sendDailyReminder] send failed', {
+      openid: user.openid,
+      templateId,
+      shouldDisableReminder,
+      error,
+      errorDetails: getErrorDetails(error)
+    });
+
     if (shouldDisableReminder) {
       await db.collection('users').doc(user._id).update({
         data: {
@@ -171,6 +249,13 @@ exports.main = async (event) => {
   let failed = 0;
   let offset = 0;
 
+  console.log('[sendDailyReminder] start', {
+    event,
+    now,
+    todayYmd,
+    templateId
+  });
+
   while (true) {
     const result = await db.collection('users')
       .skip(offset)
@@ -178,6 +263,10 @@ exports.main = async (event) => {
       .get();
 
     const users = result.data || [];
+    console.log('[sendDailyReminder] batch fetched', {
+      offset,
+      count: users.length
+    });
     if (!users.length) {
       break;
     }
@@ -185,6 +274,10 @@ exports.main = async (event) => {
     for (const user of users) {
       total += 1;
       const handleResult = await handleUser(user, now, todayYmd, templateId);
+      console.log('[sendDailyReminder] handle result', {
+        openid: user.openid,
+        handleResult
+      });
       if (handleResult.success) {
         sent += 1;
       } else if (handleResult.skipped) {
@@ -196,6 +289,14 @@ exports.main = async (event) => {
 
     offset += users.length;
   }
+
+  console.log('[sendDailyReminder] done', {
+    day: todayYmd,
+    total,
+    sent,
+    skipped,
+    failed
+  });
 
   return {
     success: true,
