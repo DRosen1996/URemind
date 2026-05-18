@@ -46,6 +46,34 @@ Page({
 
   async onShow() {
     await this.refreshConfig();
+    if (this.data.reminderEnabled) {
+      await this.autoRequestSubscribe();
+    }
+  },
+
+  async autoRequestSubscribe() {
+    const todayYmd = toYmd(new Date());
+    try {
+      const lastDate = wx.getStorageSync('lastAutoSubscribeDate');
+      if (lastDate === todayYmd) {
+        console.log('[autoSubscribe] already requested today, skip');
+        return;
+      }
+    } catch (e) { /* ignore storage error */ }
+
+    const app = getApp();
+    const templateId = app.globalData.subscribeTemplateId;
+    console.log('[autoSubscribe] start', { templateId, todayYmd });
+    try {
+      const result = await wx.requestSubscribeMessage({ tmplIds: [templateId] });
+      const accepted = result[templateId] === 'accept';
+      console.log('[autoSubscribe] result', { accepted });
+      if (accepted) {
+        wx.setStorageSync('lastAutoSubscribeDate', todayYmd);
+      }
+    } catch (error) {
+      console.log('[autoSubscribe] dismissed or failed', error);
+    }
   },
 
   async refreshConfig() {
@@ -109,23 +137,27 @@ Page({
   },
 
   async requestSubscribe() {
-    if (this.data.reminderEnabled) {
-      console.log('[subscribe] skip because already enabled', {
-        reminderEnabled: this.data.reminderEnabled,
-        subscriptionAccepted: this.data.subscriptionAccepted
-      });
-      wx.showToast({
-        title: '提醒已开启',
-        icon: 'none'
-      });
-      return;
-    }
-
     const app = getApp();
     const startTime = Date.now();
     const templateId = app.globalData.subscribeTemplateId;
 
-    console.log('[subscribe] start', {
+    if (this.data.reminderEnabled) {
+      console.log('[subscribe] renew quota for today', { templateId });
+      try {
+        const result = await wx.requestSubscribeMessage({ tmplIds: [templateId] });
+        const accepted = result[templateId] === 'accept';
+        console.log('[subscribe] renew result', { accepted, durationMs: Date.now() - startTime });
+        if (accepted) {
+          wx.setStorageSync('lastAutoSubscribeDate', toYmd(new Date()));
+        }
+        wx.showToast({ title: accepted ? '今日提醒已授权' : '本次未授权', icon: 'none' });
+      } catch (error) {
+        console.error('[subscribe] renew failed', { error, errorDetails: getErrorDetails(error) });
+      }
+      return;
+    }
+
+    console.log('[subscribe] first-time setup', {
       templateId,
       pageData: {
         cycleStartDate: this.data.cycleStartDate,
@@ -136,9 +168,7 @@ Page({
     });
 
     try {
-      const result = await wx.requestSubscribeMessage({
-        tmplIds: [templateId]
-      });
+      const result = await wx.requestSubscribeMessage({ tmplIds: [templateId] });
       const accepted = result[templateId] === 'accept';
 
       console.log('[subscribe] wx.requestSubscribeMessage result', {
@@ -161,58 +191,27 @@ Page({
       };
 
       console.log('[subscribe] saveUserConfig payload', savePayload);
-
       const saveRes = await saveUserConfig(savePayload);
+      console.log('[subscribe] saveUserConfig result', { saveRes, durationMs: Date.now() - startTime });
 
-      console.log('[subscribe] saveUserConfig result', {
-        saveRes,
-        durationMs: Date.now() - startTime
-      });
-
-      wx.showToast({
-        title: accepted ? '提醒已开启' : '提醒未开启',
-        icon: 'none'
-      });
+      if (accepted) {
+        wx.setStorageSync('lastAutoSubscribeDate', toYmd(new Date()));
+      }
+      wx.showToast({ title: accepted ? '提醒已开启' : '提醒未开启', icon: 'none' });
     } catch (error) {
-      const fallbackPayload = {
-        reminderEnabled: false,
-        subscriptionAccepted: false
-      };
-
       console.error('[subscribe] request failed', {
         templateId,
         durationMs: Date.now() - startTime,
         error,
         errorDetails: getErrorDetails(error)
       });
-
-      console.log('[subscribe] save fallback payload', fallbackPayload);
-
+      this.setData({ reminderEnabled: false, subscriptionAccepted: false });
       try {
-        const fallbackRes = await saveUserConfig(fallbackPayload);
-        console.log('[subscribe] save fallback result', {
-          fallbackRes,
-          durationMs: Date.now() - startTime
-        });
+        await saveUserConfig({ reminderEnabled: false, subscriptionAccepted: false });
       } catch (saveError) {
-        console.error('[subscribe] save fallback failed', {
-          saveError,
-          errorDetails: getErrorDetails(saveError)
-        });
+        console.error('[subscribe] save fallback failed', { saveError, errorDetails: getErrorDetails(saveError) });
       }
-
-      this.setData({
-        reminderEnabled: false,
-        subscriptionAccepted: false
-      });
-      wx.showToast({
-        title: '提醒开启失败',
-        icon: 'none'
-      });
-      console.error('[subscribe] final state reset after failure', {
-        reminderEnabled: false,
-        subscriptionAccepted: false
-      });
+      wx.showToast({ title: '提醒开启失败', icon: 'none' });
     }
   },
 

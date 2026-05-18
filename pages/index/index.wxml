@@ -49,8 +49,7 @@
   <button
     class="main-btn {{reminderEnabled ? 'main-btn-success' : ''}}"
     bindtap="requestSubscribe"
-    disabled="{{reminderEnabled}}"
-  >{{reminderEnabled ? '✓  提醒已开启' : '开启每日提醒'}}</button>
+  >{{reminderEnabled ? '续订今日提醒' : '开启每日提醒'}}</button>
 
   <!-- 更多设置入口 -->
   <view class="settings-entry" bindtap="goSettings">

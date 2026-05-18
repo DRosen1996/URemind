@@ -99,7 +99,7 @@ async function writeNotifyLog(data) {
   }
 }
 
-async function handleUser(user, now, todayYmd, templateId) {
+async function handleUser(user, now, todayYmd, templateId, miniprogramState) {
   const reminderEnabled = typeof user.reminderEnabled === 'boolean'
     ? user.reminderEnabled
     : (user.status === 'active' && !!user.subscriptionAccepted);
@@ -180,7 +180,7 @@ async function handleUser(user, now, todayYmd, templateId) {
         thing4: { value: thing4Value },
         time13: { value: time13Value }
       },
-      miniprogramState: 'formal'
+      miniprogramState
     });
 
     console.log('[sendDailyReminder] send success', {
@@ -208,11 +208,15 @@ async function handleUser(user, now, todayYmd, templateId) {
     return { success: true };
   } catch (error) {
     const errText = `${error.errCode || ''} ${error.message || ''}`;
-    const shouldDisableReminder = /43101|template|subscribe|用户|accept/i.test(errText);
+    // 43101 = 用户订阅配额已耗尽（一次性订阅正常现象，不关闭提醒）
+    // 其他订阅相关错误（如用户永久拒绝）才真正关闭
+    const isQuotaExhausted = /43101/.test(errText);
+    const shouldDisableReminder = !isQuotaExhausted && /template|subscribe|用户|accept/i.test(errText);
 
     console.error('[sendDailyReminder] send failed', {
       openid: user.openid,
       templateId,
+      isQuotaExhausted,
       shouldDisableReminder,
       error,
       errorDetails: getErrorDetails(error)
@@ -243,6 +247,7 @@ exports.main = async (event) => {
   const now = new Date();
   const todayYmd = formatYmd(now);
   const templateId = event.templateId || DEFAULT_TEMPLATE_ID;
+  const miniprogramState = event.miniprogramState || 'formal';
   let total = 0;
   let sent = 0;
   let skipped = 0;
@@ -273,7 +278,7 @@ exports.main = async (event) => {
 
     for (const user of users) {
       total += 1;
-      const handleResult = await handleUser(user, now, todayYmd, templateId);
+      const handleResult = await handleUser(user, now, todayYmd, templateId, miniprogramState);
       console.log('[sendDailyReminder] handle result', {
         openid: user.openid,
         handleResult
