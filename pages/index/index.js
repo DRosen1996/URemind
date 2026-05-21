@@ -36,6 +36,7 @@ Page({
     remindTimePending: false,
     reminderEnabled: false,
     subscriptionAccepted: false,
+    subscribedToday: false,
     hasStarted: false,
     daysUntilStart: 0,
     dayIndex: 0,
@@ -53,12 +54,22 @@ Page({
     }
   },
 
+  _checkSubscribedToday() {
+    const todayYmd = toYmd(new Date());
+    try {
+      return wx.getStorageSync('lastAutoSubscribeDate') === todayYmd;
+    } catch (e) {
+      return false;
+    }
+  },
+
   async autoRequestSubscribe() {
     const todayYmd = toYmd(new Date());
     try {
       const lastDate = wx.getStorageSync('lastAutoSubscribeDate');
       if (lastDate === todayYmd) {
         console.log('[autoSubscribe] already requested today, skip');
+        this.setData({ subscribedToday: true });
         return;
       }
     } catch (e) { /* ignore storage error */ }
@@ -72,6 +83,7 @@ Page({
       console.log('[autoSubscribe] result', { accepted });
       if (accepted) {
         wx.setStorageSync('lastAutoSubscribeDate', todayYmd);
+        this.setData({ subscribedToday: true });
       }
     } catch (error) {
       console.log('[autoSubscribe] dismissed or failed', error);
@@ -85,6 +97,7 @@ Page({
 
     const dots = buildCycleDots(cycle);
     const savedRemindTime = config.remindTime || '21:00';
+    const subscribedToday = this._checkSubscribedToday();
     this.setData({
       cycleStartDate,
       remindTime: savedRemindTime,
@@ -92,6 +105,7 @@ Page({
       remindTimePending: false,
       reminderEnabled: !!config.reminderEnabled,
       subscriptionAccepted: !!config.subscriptionAccepted,
+      subscribedToday,
       hasStarted: cycle.hasStarted,
       daysUntilStart: cycle.daysUntilStart,
       dayIndex: cycle.dayIndex,
@@ -196,7 +210,8 @@ Page({
         reminderEnabled: true,
         subscriptionAccepted: true,
         savedRemindTime: remindTime,
-        remindTimePending: false
+        remindTimePending: false,
+        subscribedToday: true
       });
 
       const toastTitle = isFirstTime ? '提醒已开启' : (remindTimePending ? '提醒时间已更新' : '今日提醒已授权');

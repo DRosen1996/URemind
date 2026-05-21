@@ -47,9 +47,9 @@
 
   <!-- 订阅按钮 -->
   <button
-    class="main-btn {{reminderEnabled ? 'main-btn-success' : ''}} {{remindTimePending ? 'main-btn-pending' : ''}}"
+    class="main-btn {{remindTimePending ? 'main-btn-pending' : (subscribedToday ? 'main-btn-done' : (reminderEnabled ? 'main-btn-success' : ''))}}"
     bindtap="requestSubscribe"
-  >{{!reminderEnabled ? '开启每日提醒' : (remindTimePending ? '更新并续订提醒' : '续订今日提醒')}}</button>
+  >{{!reminderEnabled ? '开启每日提醒' : (remindTimePending ? '更新并续订提醒' : (subscribedToday ? '今日提醒已确认 ✓' : '续订今日提醒'))}}</button>
   <text wx:if="{{remindTimePending}}" class="btn-hint">提醒时间已改为 {{remindTime}}，点击上方按钮保存</text>
 
   <!-- 更多设置入口 -->

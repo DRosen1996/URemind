@@ -162,6 +162,13 @@ page {
   opacity: 1 !important;
 }
 
+.main-btn-done {
+  background: transparent !important;
+  color: #10B981 !important;
+  border: 2rpx solid #10B981 !important;
+  opacity: 1 !important;
+}
+
 .config-value-pending {
   color: #F59E0B;
 }
