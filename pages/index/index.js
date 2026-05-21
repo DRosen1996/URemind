@@ -32,6 +32,8 @@ Page({
   data: {
     cycleStartDate: '',
     remindTime: '21:00',
+    savedRemindTime: '21:00',
+    remindTimePending: false,
     reminderEnabled: false,
     subscriptionAccepted: false,
     hasStarted: false,
@@ -82,9 +84,12 @@ Page({
     const cycle = calcCycleStatus(cycleStartDate, new Date());
 
     const dots = buildCycleDots(cycle);
+    const savedRemindTime = config.remindTime || '21:00';
     this.setData({
       cycleStartDate,
-      remindTime: config.remindTime || '21:00',
+      remindTime: savedRemindTime,
+      savedRemindTime,
+      remindTimePending: false,
       reminderEnabled: !!config.reminderEnabled,
       subscriptionAccepted: !!config.subscriptionAccepted,
       hasStarted: cycle.hasStarted,
@@ -117,22 +122,24 @@ Page({
       cycleDots1: dots.slice(0, 14),
       cycleDots2: dots.slice(14)
     });
-    await saveUserConfig({
-      cycleStartDate,
-      remindTime: this.data.remindTime,
-      reminderEnabled: this.data.reminderEnabled,
-      subscriptionAccepted: this.data.subscriptionAccepted
-    });
+    try {
+      await saveUserConfig({
+        cycleStartDate,
+        remindTime: this.data.remindTime,
+        reminderEnabled: this.data.reminderEnabled,
+        subscriptionAccepted: this.data.subscriptionAccepted
+      });
+      wx.showToast({ title: `周期已设为 ${cycleStartDate}`, icon: 'success', duration: 1500 });
+    } catch (err) {
+      wx.showToast({ title: '保存失败，请重试', icon: 'error' });
+    }
   },
 
-  async onRemindTimeChange(e) {
+  onRemindTimeChange(e) {
     const remindTime = e.detail.value;
-    this.setData({ remindTime });
-    await saveUserConfig({
-      cycleStartDate: this.data.cycleStartDate,
+    this.setData({
       remindTime,
-      reminderEnabled: this.data.reminderEnabled,
-      subscriptionAccepted: this.data.subscriptionAccepted
+      remindTimePending: remindTime !== this.data.savedRemindTime
     });
   },
 
@@ -140,31 +147,12 @@ Page({
     const app = getApp();
     const startTime = Date.now();
     const templateId = app.globalData.subscribeTemplateId;
+    const { remindTime, cycleStartDate, reminderEnabled, savedRemindTime, remindTimePending } = this.data;
+    const isFirstTime = !reminderEnabled;
+    const needsSave = isFirstTime || remindTimePending;
 
-    if (this.data.reminderEnabled) {
-      console.log('[subscribe] renew quota for today', { templateId });
-      try {
-        const result = await wx.requestSubscribeMessage({ tmplIds: [templateId] });
-        const accepted = result[templateId] === 'accept';
-        console.log('[subscribe] renew result', { accepted, durationMs: Date.now() - startTime });
-        if (accepted) {
-          wx.setStorageSync('lastAutoSubscribeDate', toYmd(new Date()));
-        }
-        wx.showToast({ title: accepted ? '今日提醒已授权' : '本次未授权', icon: 'none' });
-      } catch (error) {
-        console.error('[subscribe] renew failed', { error, errorDetails: getErrorDetails(error) });
-      }
-      return;
-    }
-
-    console.log('[subscribe] first-time setup', {
-      templateId,
-      pageData: {
-        cycleStartDate: this.data.cycleStartDate,
-        remindTime: this.data.remindTime,
-        reminderEnabled: this.data.reminderEnabled,
-        subscriptionAccepted: this.data.subscriptionAccepted
-      }
+    console.log('[subscribe] start', {
+      templateId, reminderEnabled, remindTime, remindTimePending, isFirstTime, needsSave
     });
 
     try {
@@ -172,46 +160,63 @@ Page({
       const accepted = result[templateId] === 'accept';
 
       console.log('[subscribe] wx.requestSubscribeMessage result', {
-        templateId,
-        result,
-        accepted,
-        durationMs: Date.now() - startTime
+        templateId, result, accepted, durationMs: Date.now() - startTime
       });
+
+      if (!accepted) {
+        if (remindTimePending) {
+          this.setData({ remindTime: savedRemindTime, remindTimePending: false });
+        }
+        wx.showToast({ title: '未完成授权，设置未保存', icon: 'none' });
+        return;
+      }
+
+      wx.setStorageSync('lastAutoSubscribeDate', toYmd(new Date()));
+
+      if (needsSave) {
+        const savePayload = {
+          cycleStartDate,
+          remindTime,
+          reminderEnabled: true,
+          subscriptionAccepted: true,
+          lastNotifiedDate: ''
+        };
+        console.log('[subscribe] saveUserConfig payload', savePayload);
+        try {
+          const saveRes = await saveUserConfig(savePayload);
+          console.log('[subscribe] saveUserConfig result', { saveRes, durationMs: Date.now() - startTime });
+        } catch (saveError) {
+          console.error('[subscribe] saveUserConfig failed', { saveError, errorDetails: getErrorDetails(saveError) });
+          wx.showToast({ title: '保存失败，请重试', icon: 'error' });
+          return;
+        }
+      }
 
       this.setData({
-        reminderEnabled: accepted,
-        subscriptionAccepted: accepted
+        reminderEnabled: true,
+        subscriptionAccepted: true,
+        savedRemindTime: remindTime,
+        remindTimePending: false
       });
 
-      const savePayload = {
-        cycleStartDate: this.data.cycleStartDate,
-        remindTime: this.data.remindTime,
-        reminderEnabled: accepted,
-        subscriptionAccepted: accepted
-      };
-
-      console.log('[subscribe] saveUserConfig payload', savePayload);
-      const saveRes = await saveUserConfig(savePayload);
-      console.log('[subscribe] saveUserConfig result', { saveRes, durationMs: Date.now() - startTime });
-
-      if (accepted) {
-        wx.setStorageSync('lastAutoSubscribeDate', toYmd(new Date()));
-      }
-      wx.showToast({ title: accepted ? '提醒已开启' : '提醒未开启', icon: 'none' });
+      const toastTitle = isFirstTime ? '提醒已开启' : (remindTimePending ? '提醒时间已更新' : '今日提醒已授权');
+      wx.showToast({ title: toastTitle, icon: 'success' });
     } catch (error) {
       console.error('[subscribe] request failed', {
-        templateId,
-        durationMs: Date.now() - startTime,
-        error,
-        errorDetails: getErrorDetails(error)
+        templateId, durationMs: Date.now() - startTime, error, errorDetails: getErrorDetails(error)
       });
-      this.setData({ reminderEnabled: false, subscriptionAccepted: false });
-      try {
-        await saveUserConfig({ reminderEnabled: false, subscriptionAccepted: false });
-      } catch (saveError) {
-        console.error('[subscribe] save fallback failed', { saveError, errorDetails: getErrorDetails(saveError) });
+      if (remindTimePending) {
+        this.setData({ remindTime: savedRemindTime, remindTimePending: false });
       }
-      wx.showToast({ title: '提醒开启失败', icon: 'none' });
+      if (isFirstTime) {
+        this.setData({ reminderEnabled: false, subscriptionAccepted: false });
+        try {
+          await saveUserConfig({ reminderEnabled: false, subscriptionAccepted: false });
+        } catch (saveError) {
+          console.error('[subscribe] save fallback failed', { saveError, errorDetails: getErrorDetails(saveError) });
+        }
+      }
+      wx.showToast({ title: '操作失败，请重试', icon: 'none' });
     }
   },
 

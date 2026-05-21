@@ -156,6 +156,21 @@ page {
   opacity: 1 !important;
 }
 
+.main-btn-pending {
+  background: #F59E0B !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+.pending-tag {
+  font-size: 22rpx;
+  color: #F59E0B;
+  font-weight: 600;
+  background: #FEF3C7;
+  border-radius: 6rpx;
+  padding: 2rpx 10rpx;
+}
+
 /* ─── 更多设置入口 ─── */
 .settings-entry {
   display: flex;
