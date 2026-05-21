@@ -38,9 +38,8 @@
       <view class="config-row">
         <text class="config-label">每日提醒时间</text>
         <view class="config-value-wrap">
-          <text class="config-value">{{remindTime}}</text>
-          <text wx:if="{{remindTimePending}}" class="pending-tag">待确认</text>
-          <text wx:else class="arrow">›</text>
+          <text class="config-value {{remindTimePending ? 'config-value-pending' : ''}}">{{remindTime}}</text>
+          <text class="arrow">›</text>
         </view>
       </view>
     </picker>
@@ -51,6 +50,7 @@
     class="main-btn {{reminderEnabled ? 'main-btn-success' : ''}} {{remindTimePending ? 'main-btn-pending' : ''}}"
     bindtap="requestSubscribe"
   >{{!reminderEnabled ? '开启每日提醒' : (remindTimePending ? '更新并续订提醒' : '续订今日提醒')}}</button>
+  <text wx:if="{{remindTimePending}}" class="btn-hint">提醒时间已改为 {{remindTime}}，点击上方按钮保存</text>
 
   <!-- 更多设置入口 -->
   <view class="settings-entry" bindtap="goSettings">

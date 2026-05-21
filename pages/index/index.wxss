@@ -162,13 +162,16 @@ page {
   opacity: 1 !important;
 }
 
-.pending-tag {
-  font-size: 22rpx;
+.config-value-pending {
   color: #F59E0B;
-  font-weight: 600;
-  background: #FEF3C7;
-  border-radius: 6rpx;
-  padding: 2rpx 10rpx;
+}
+
+.btn-hint {
+  display: block;
+  text-align: center;
+  font-size: 24rpx;
+  color: #9CA3AF;
+  margin-top: 12rpx;
 }
 
 /* ─── 更多设置入口 ─── */
