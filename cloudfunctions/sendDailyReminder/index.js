@@ -7,6 +7,7 @@ cloud.init({
 const db = cloud.database();
 const BATCH_SIZE = 100;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const BEIJING_OFFSET_MS = 8 * 60 * 60 * 1000; // UTC+8
 const CYCLE_LENGTH = 28;
 const PILL_DAYS = 21;
 // 与小程序 app.globalData.subscribeTemplateId 保持一致（打卡提醒：thing4 + time13）
@@ -37,16 +38,22 @@ function buildThing4(cycle) {
   return truncateThing(`优思明停药第${cycle.breakDayIndex}天`);
 }
 
+// 将任意时间转为北京时间（UTC+8）表示的 Date 对象，用 getUTC* 方法读取北京各字段
+function toBeijingDate(dateInput) {
+  return new Date(new Date(dateInput).getTime() + BEIJING_OFFSET_MS);
+}
+
 function toDateOnly(dateInput) {
-  const date = new Date(dateInput);
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const bj = toBeijingDate(dateInput);
+  // 以北京年月日构造 UTC midnight，保证日期差计算不受时区影响
+  return new Date(Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate()));
 }
 
 function formatYmd(dateInput = new Date()) {
-  const date = toDateOnly(dateInput);
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
+  const bj = toBeijingDate(dateInput);
+  const year = bj.getUTCFullYear();
+  const month = `${bj.getUTCMonth() + 1}`.padStart(2, '0');
+  const day = `${bj.getUTCDate()}`.padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
@@ -82,7 +89,8 @@ function minutesFromTime(remindTime = '21:00') {
 }
 
 function shouldSendToday(remindTime, currentDate) {
-  const nowMinutes = currentDate.getHours() * 60 + currentDate.getMinutes();
+  const bj = toBeijingDate(currentDate);
+  const nowMinutes = bj.getUTCHours() * 60 + bj.getUTCMinutes();
   return nowMinutes >= minutesFromTime(remindTime);
 }
 
@@ -257,6 +265,7 @@ exports.main = async (event) => {
   console.log('[sendDailyReminder] start', {
     event,
     now,
+    nowBeijing: toBeijingDate(now).toISOString(),
     todayYmd,
     templateId
   });
