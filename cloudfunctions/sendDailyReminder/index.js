@@ -88,10 +88,19 @@ function minutesFromTime(remindTime = '21:00') {
   return hour * 60 + minute;
 }
 
-function shouldSendToday(remindTime, currentDate) {
+function getBeijingMinutes(currentDate) {
   const bj = toBeijingDate(currentDate);
-  const nowMinutes = bj.getUTCHours() * 60 + bj.getUTCMinutes();
-  return nowMinutes >= minutesFromTime(remindTime);
+  return bj.getUTCHours() * 60 + bj.getUTCMinutes();
+}
+
+function formatMinutesAsTime(totalMinutes) {
+  const hour = Math.floor(totalMinutes / 60);
+  const minute = totalMinutes % 60;
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function shouldSendToday(remindTime, currentDate) {
+  return getBeijingMinutes(currentDate) >= minutesFromTime(remindTime);
 }
 
 async function writeNotifyLog(data) {
