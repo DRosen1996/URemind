@@ -8,6 +8,144 @@ page {
   box-sizing: border-box;
 }
 
+/* ─── 骨架屏 ─── */
+.page-skeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-card {
+  border-radius: 24rpx;
+  padding: 36rpx;
+  margin-bottom: 20rpx;
+  background: #fff;
+}
+
+.skeleton-config {
+  border-radius: 20rpx;
+  padding: 0 28rpx;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.skeleton-line {
+  border-radius: 8rpx;
+  background: #E5E7EB;
+}
+
+.skeleton-line-sm {
+  width: 120rpx;
+  height: 22rpx;
+  margin-bottom: 16rpx;
+}
+
+.skeleton-line-lg {
+  width: 280rpx;
+  height: 52rpx;
+  margin-bottom: 12rpx;
+}
+
+.skeleton-line-md {
+  width: 200rpx;
+  height: 26rpx;
+  margin-bottom: 28rpx;
+}
+
+.skeleton-line-xs {
+  width: 140rpx;
+  height: 22rpx;
+  margin-top: 20rpx;
+}
+
+.skeleton-dots-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.skeleton-dots-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8rpx;
+}
+
+.skeleton-dot {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 0;
+}
+
+.skeleton-line-config {
+  width: 160rpx;
+  height: 28rpx;
+}
+
+.skeleton-line-value {
+  width: 120rpx;
+  height: 28rpx;
+}
+
+.skeleton-divider {
+  height: 1rpx;
+  background: #F3F4F6;
+}
+
+.skeleton-btn {
+  height: 88rpx;
+  border-radius: 16rpx;
+  margin-top: 8rpx;
+}
+
+/* ─── 内容入场 ─── */
+.page-content-enter .status-card-block {
+  animation: block-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-content-enter .card-enter {
+  animation: block-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+.page-content-enter .main-btn-enter {
+  animation: block-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) 160ms both;
+}
+
+.page-content-enter .settings-entry-block {
+  animation: block-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
+}
+
+@keyframes block-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ─── 状态卡片 ─── */
 .status-card {
   border-radius: 24rpx;
@@ -75,6 +213,22 @@ page {
   height: 28rpx;
   border-radius: 50%;
   flex-shrink: 0;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.dot-enter {
+  animation: dot-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes dot-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .dot-done-pill    { background: #A78BFA; }
@@ -84,6 +238,44 @@ page {
 .dot-future-pill  { background: #DDD6FE; }
 .dot-future-break { background: #A7F3D0; }
 .dot-inactive     { background: #E5E7EB; }
+
+.dot-today-pulse.dot-today-pill {
+  animation: today-pulse-pill 2s ease-in-out infinite;
+}
+
+.dot-today-pulse.dot-today-break {
+  animation: today-pulse-break 2s ease-in-out infinite;
+}
+
+.dot-enter.dot-today-pill {
+  animation: dot-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both, today-pulse-pill 2s ease-in-out 0.35s infinite;
+}
+
+.dot-enter.dot-today-break {
+  animation: dot-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both, today-pulse-break 2s ease-in-out 0.35s infinite;
+}
+
+@keyframes today-pulse-pill {
+  0%, 100% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 5rpx rgba(124,58,237,0.22);
+  }
+  50% {
+    transform: scale(1.35);
+    box-shadow: 0 0 0 8rpx rgba(124,58,237,0.12);
+  }
+}
+
+@keyframes today-pulse-break {
+  0%, 100% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 5rpx rgba(5,150,105,0.22);
+  }
+  50% {
+    transform: scale(1.35);
+    box-shadow: 0 0 0 8rpx rgba(5,150,105,0.12);
+  }
+}
 
 .progress-label {
   font-size: 22rpx;
@@ -105,6 +297,12 @@ page {
   align-items: center;
   justify-content: space-between;
   padding: 32rpx 0;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.config-row-active {
+  transform: scale(0.98);
+  opacity: 0.92;
 }
 
 .config-label {
@@ -123,6 +321,7 @@ page {
   font-size: 28rpx;
   color: #111827;
   font-weight: 600;
+  transition: color 0.2s ease;
 }
 
 .arrow {
@@ -148,6 +347,11 @@ page {
   padding: 26rpx 32rpx;
   line-height: 1.4;
   border: none;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
+}
+
+.main-btn-active {
+  transform: scale(0.98);
 }
 
 .main-btn-success {
@@ -178,6 +382,16 @@ page {
   text-align: center;
   font-size: 24rpx;
   color: #9CA3AF;
+  margin-top: 0;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.25s ease, margin-top 0.25s ease;
+}
+
+.btn-hint-visible {
+  max-height: 80rpx;
+  opacity: 1;
   margin-top: 12rpx;
 }
 
@@ -189,6 +403,11 @@ page {
   gap: 6rpx;
   margin-top: 28rpx;
   padding: 16rpx;
+  transition: transform 0.2s ease;
+}
+
+.settings-entry-active {
+  transform: translateX(4rpx);
 }
 
 .settings-entry-text {
@@ -201,4 +420,9 @@ page {
   color: #D1D5DB;
   line-height: 1;
   margin-top: -2rpx;
+  transition: transform 0.2s ease;
+}
+
+.settings-entry-active .settings-entry-arrow {
+  transform: translateX(4rpx);
 }

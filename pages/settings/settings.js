@@ -1,4 +1,5 @@
 const { loadUserConfig, saveUserConfig } = require('../../utils/user-config');
+const { writeUserConfigCache } = require('../../utils/user-config-cache');
 const { toYmd } = require('../../utils/cycle');
 
 Page({
@@ -35,6 +36,10 @@ Page({
       subscriptionAccepted: false,
       status: 'paused'
     });
+    writeUserConfigCache({
+      reminderEnabled: false,
+      subscriptionAccepted: false
+    });
     wx.showToast({
       title: '提醒已关闭',
       icon: 'none'
@@ -43,6 +48,11 @@ Page({
   async onResetCycle() {
     const cycleStartDate = toYmd(new Date());
     await saveUserConfig({
+      cycleStartDate,
+      reminderEnabled: this.data.reminderEnabled,
+      subscriptionAccepted: this.data.subscriptionAccepted
+    });
+    writeUserConfigCache({
       cycleStartDate,
       reminderEnabled: this.data.reminderEnabled,
       subscriptionAccepted: this.data.subscriptionAccepted
